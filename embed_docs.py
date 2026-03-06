@@ -32,7 +32,7 @@ def chunk_text(text, chunk_size=800, overlap=100):
     return chunks
 
 
-def embed_text(text):
+def embed_text(client, text):
     response = client.embeddings.create(model="text-embedding-3-large", input=text)
     return response.data[0].embedding
 
@@ -50,7 +50,7 @@ for file_path in Path(FOLDER_PATH).glob("*.txt"):
     chunks = chunk_text(text)
 
     for i, chunk in enumerate(chunks):
-        embedding = embed_text(chunk)
+        embedding = embed_text(client, chunk)
         chunk_tokens = count_tokens(chunk)
 
         all_embedded_chunks.append(

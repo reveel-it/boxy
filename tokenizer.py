@@ -3,6 +3,11 @@ import numpy as np
 MAX_CONTEXT_TOKENS = 4000
 
 
+def embed_text(client, text):
+    response = client.embeddings.create(model="text-embedding-3-large", input=text)
+    return response.data[0].embedding
+
+
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 

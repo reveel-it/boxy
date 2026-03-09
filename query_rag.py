@@ -39,7 +39,7 @@ def main():
 
     with open("embedded_docs.json", "r") as f:
         all_chunks = json.load(f)
-    docs_ordered_by_relevance = retrieve_context(client, question, all_chunks, k=100)
+    docs_ordered_by_relevance = retrieve_context(client, question, all_chunks, k=20)
 
     print(get_augmented_answer(relevant_docs=docs_ordered_by_relevance))
 

@@ -1,0 +1,18 @@
+{
+  "document_id": "get_normalized_surcharge",
+  "document_type": "function",
+  "function_name": "get_normalized_surcharge",
+  "input": "dataframe with table schema of premodel",
+  "output": "dataframe with two extra columns: surcharge_id and surcharge_name",
+  "description": "For an input dataframe of charges, adds two columns: surcharge_id and surcharge_name to the dataframe. Use this function if the query is about surcharge information but surcharge_id and surcharge_name are not present in the shipments table. Charge descriptions are named differently in carrier invoice files but may represent the same surcharge and pricing. Retrieving surcharge_id and surcharge_name is necessary to correctly identify the charge type.",
+  "example": [
+    {
+      "question": "What would the normalized surcharge name be for the demand surcharge on tracking number xyz?",
+      "answer": "(\n    get_table(\"prod.charge.premodel\")\n    .where(F.col(\"tracking_number\") == \"xyz\" and F.lower(F.col(\"charge_description\")).like(\"%demand%\"))\n    .transform(get_normalized_surcharge)\n    .select(\"surcharge_name\")\n    .limit(1)\n)"
+    },
+    {
+      "question": "Give me the surcharge ids and surcharge names for the tracking number abc for staging.",
+      "answer": "(\n    get_table(\"staging.charge.premodel\")\n    .where(F.col(\"tracking_number\") == \"abc\")\n    .transform(get_normalized_surcharge)\n    .select(\"surcharge_id\", \"surcharge_name\", \"charge_description\", \"*\")\n)"
+    }
+  ]
+}

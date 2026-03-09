@@ -1,0 +1,103 @@
+{
+  "doc_id": "carrier_rates_schema",
+  "doc_type": "schema",
+  "catalog": "prod",
+  "schema": "rates",
+  "table_name": "carrier",
+  "description": "The carrier_rates table stores normalized shipping rate data by carrier, service level, shipping zone, and billable weight. Each row represents a single price point for a specific combination of carrier, service, zone, and weight. Primary use cases: retrieve transportation rates, compare service pricing within a carrier, identify cheapest services for a given zone and weight, and analyze rate differences across zones.",
+  "grain": [
+    "carrier",
+    "service",
+    "weight",
+    "zone",
+    "import_export",
+    "container_type",
+    "start_date",
+    "end_date",
+    "is_hawaii",
+    "is_intra_hawaii",
+    "is_alaska",
+    "is_intra_alaska"
+  ],
+  "columns": [
+    {
+      "column_name": "carrier",
+      "column_type": "string",
+      "column_notes": "Shipping carrier name. Common values: fedex, ups."
+    },
+    {
+      "column_name": "service",
+      "column_type": "string",
+      "column_notes": "Carrier-defined service level name used internally in the rates table. User-facing service names must be mapped to these normalized values. FedEx mappings: {\"2Day\": \"2 Day Standard\", \"IF\": \"International Priority Early AM\", \"IF-Imp\": \"International Priority Early AM\", \"SO\": \"1 Day Standard\", \"Ground\": \"Ground Commercial\", \"FO\": \"1 Day Early AM\", \"SP\": \"Ground Economy\", \"IE\": \"International Economy\", \"IE-Imp\": \"International Economy\", \"FHD\": \"Ground Residential\", \"IP\": \"International Priority\", \"IP-Imp\": \"International Priority\", \"PO\": \"1 Day Priority\", \"2DayAM\": \"2 Day Early AM\", \"ESP\": \"3 Day Standard\"}. UPS mappings: {\"Next Day Air AM\": \"1 Day Early AM\", \"Next Day Air\": \"1 Day Priority\", \"Next Day Air Saver\": \"1 Day Standard\", \"2 Day Air AM\": \"2 Day Early AM\", \"2 Day Air\": \"2 Day Standard\", \"3 Day Select\": \"3 Day Standard\", \"Ground Commercial\": \"Ground Commercial\", \"Ground Residential\": \"Ground Residential\", \"WW Expedited Export\": \"International Economy\", \"WW Expedited Import\": \"International Economy\", \"WW Express Plus Export\": \"International Priority Early AM\", \"WW Express Plus Import\": \"International Priority Early AM\", \"WW Express Saver Export\": \"International Priority\", \"WW Express Saver Import\": \"International Priority\", \"WW Express Export\": \"International Priority\", \"WW Express Import\": \"International Priority\", \"UPS SurePost - 1 lb or Greater\": \"Ground Economy\", \"UPS SurePost - Less than 1 lb\": \"Ground Economy\"}."
+    },
+    {
+      "column_name": "zone",
+      "column_type": "string",
+      "column_notes": "Carrier-defined geographic pricing zone. Example values: 102, 103, 104, etc. Must match exactly."
+    },
+    {
+      "column_name": "weight",
+      "column_type": "int",
+      "column_notes": "Billable shipment weight in pounds. If the user asks for weight less than 1, filter for weight = 0."
+    },
+    {
+      "column_name": "cost_curr",
+      "column_type": "decimal",
+      "column_notes": "Published transportation rate in USD. This is typically the value users want returned when asking for the rate."
+    },
+    {
+      "column_name": "import_export",
+      "column_type": "string",
+      "column_notes": "Indicates whether the rate applies to import or export shipments. Distinct values: import, export, or null. If not specified by the user, filter for import_export is null. If the service implies import or export but the user does not specify, filter for import_export = relevant type or null."
+    },
+    {
+      "column_name": "container_type",
+      "column_type": "string",
+      "column_notes": "Container type for shipments with container-specific pricing. Values include 10 KG, 25 KG, envelope, FedEx 10Kg Box, FedEx 25Kg Box, pak. If not specified, filter container_type is null."
+    },
+    {
+      "column_name": "start_date",
+      "column_type": "date",
+      "column_notes": "Start date when the rate becomes effective."
+    },
+    {
+      "column_name": "end_date",
+      "column_type": "date",
+      "column_notes": "End date when the rate expires. Null indicates the rate is currently active."
+    },
+    {
+      "column_name": "is_hawaii",
+      "column_type": "boolean",
+      "column_notes": "Indicates Hawaii-specific rates. Mutually exclusive with intra_hawaii. If unspecified, filter for false."
+    },
+    {
+      "column_name": "is_alaska",
+      "column_type": "boolean",
+      "column_notes": "Indicates Alaska-specific rates. Mutually exclusive with intra_alaska. If unspecified, filter for false."
+    },
+    {
+      "column_name": "is_intra_hawaii",
+      "column_type": "boolean",
+      "column_notes": "Indicates intra-Hawaii rates. Mutually exclusive with is_hawaii. If unspecified, filter for false."
+    },
+    {
+      "column_name": "is_intra_alaska",
+      "column_type": "boolean",
+      "column_notes": "Indicates intra-Alaska rates. Mutually exclusive with is_alaska. If unspecified, filter for false."
+    }
+  ],
+  "examples": [
+    {
+      "question": "What is the current rate for fedex 2 Day Standard 3 lbs and zone 4?",
+      "answer": "select cost_curr from prod.rates.carrier where carrier = 'fedex' and service = '2Day' and weight = 3 and zone = '4' and not is_hawaii and not is_alaska and not is_intra_alaska and not is_intra_hawaii and current_date() between start_date and coalesce(end_date, '2099-12-31') order by start_date desc limit 1"
+    },
+    {
+      "question": "What did ups ground commercial hawaii rate cost for 3 lb and zone 44 on 2025-12-10?",
+      "answer": "select cost_curr from prod.rates.carrier where carrier = 'ups' and service = 'Ground Commercial' and weight = 3 and zone = '44' and is_hawaii and not is_alaska and not is_intra_alaska and not is_intra_hawaii and '2025-12-10' between start_date and coalesce(end_date, '2099-12-31') order by start_date desc"
+    },
+    {
+      "question": "What did fedex international priority import cost for zone PR and weight 2 on 2026-01-01 for container type pak?",
+      "answer": "select * from prod.rates.carrier where carrier = 'fedex' and service = 'IP-Imp' and weight = 2 and zone = 'PR' and (import_export is null or import_export = 'import') and container_type rlike 'pak' and not is_hawaii and not is_alaska and not is_intra_alaska and not is_intra_hawaii and '2026-01-01' between start_date and coalesce(end_date, '2099-12-31') order by start_date desc limit 1"
+    }
+  ]
+}

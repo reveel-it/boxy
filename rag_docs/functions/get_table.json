@@ -1,11 +1,11 @@
 {
-  "document_id": "get_table",
-  "document_type": "function",
+  "doc_id": "get_table",
+  "doc_type": "function",
   "function_name": "get_table",
   "input": "str (table name)",
   "output": "dataframe",
   "description": "Returns the appropriate table as a dataframe so the RAG can start applying other pyspark transformations or specific functions on it.",
-  "example": [
+  "examples": [
     {
       "code": "premodel = get_table(\"prod.charge.premodel\")"
     }

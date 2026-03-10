@@ -4,7 +4,7 @@
   "catalog": "prod",
   "schema": "charge",
   "table_name": "premodel",
-  "description": "The table used in agreement discount application. This table merges adjustments and corrections into the appropriate original charge rows. Primary use cases: answering questions about a client's shipping spend and analyzing charges for specific shipments or tracking numbers.",
+  "description": "The table with all the charge data. This table merges adjustments and corrections into the appropriate original charge rows. Primary use cases: answering questions about a client's shipping spend and analyzing charges for specific shipments or tracking numbers.",
   "grain": [
     "lead_shipment_id",
     "shipment_id",

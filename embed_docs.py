@@ -1,71 +1,43 @@
-import os
-from pathlib import Path
-from openai import OpenAI
 import json
-import tiktoken
+from pathlib import Path
 
-with open("/Users/anthonywang/.langchain", "r") as f:
-    api_key = f.read().strip()
-
-client = OpenAI(api_key=api_key)
+from client import client
 
 FOLDER_PATH = "rag_docs/"
 OUTPUT_FILE = "embedded_docs.json"
 
-# Choose encoding compatible with modern OpenAI models
-enc = tiktoken.get_encoding("cl100k_base")
+embedded_docs = []
 
 
-def count_tokens(text: str) -> int:
-    return len(enc.encode(text))
+def embed_text(client, text: str, model: str = "text-embedding-3-small") -> list[float]:
+    """
+    Returns an embedding vector for the input text using OpenAI embeddings.
 
+    Args:
+        client: OpenAI client object.
+        text: The text to embed.
+        model: Embedding model to use. Default is "text-embedding-3-small".
 
-def chunk_text(text, chunk_size=800, overlap=100):
-    chunks = []
-    start = 0
-
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start = end - overlap
-
-    return chunks
-
-
-def embed_text(client, text):
-    response = client.embeddings.create(model="text-embedding-3-large", input=text)
+    Returns:
+        A list of floats representing the embedding vector.
+    """
+    response = client.embeddings.create(model=model, input=text)
     return response.data[0].embedding
 
 
-all_embedded_chunks = []
-
-for file_path in Path(FOLDER_PATH).rglob("*.txt"):
+for file_path in Path(FOLDER_PATH).rglob("*.json"):
     with open(file_path, "r", encoding="utf-8") as f:
-        text = f.read()
+        doc = json.load(f)
 
-    doc_id = text.split("\n")[0].split(": ")[1]
-    doc_type = text.split("\n")[1].split(": ")[1]
-    entity_name = text.split("\n")[4].split(": ")[1]
+    description = doc.get("description")
 
-    chunks = chunk_text(text)
+    if description:
+        embedding = embed_text(client, description)
+        doc["description_embedding"] = embedding
 
-    for i, chunk in enumerate(chunks):
-        embedding = embed_text(client, chunk)
-        chunk_tokens = count_tokens(chunk)
+    embedded_docs.append(doc)
 
-        all_embedded_chunks.append(
-            {
-                "document_id": doc_id,
-                "document_type": doc_type,
-                "entity_name": entity_name,
-                "chunk_index": i,
-                "chunk_text": chunk,
-                "embedding": embedding,
-                "chunk_tokens": chunk_tokens,
-            }
-        )
-
-with open(OUTPUT_FILE, "w") as f:
-    json.dump(all_embedded_chunks, f)
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    json.dump(embedded_docs, f, indent=2)
 
 print("Done.")

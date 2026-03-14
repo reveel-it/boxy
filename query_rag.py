@@ -6,25 +6,25 @@ from prompts import get_augmented_answer
 from retrieve_context import retrieve_relevant_docs
 
 
-def get_simple_answer(client, question, schema_doc):
-    return client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
-            {
-                "role": "system",
-                "content": f"""
-    You generate Snowpark Pyspark code.
-    Use the schema below.
+# def get_simple_answer(client, question, schema_doc):
+#     return client.responses.create(
+#         model="gpt-4.1-mini",
+#         input=[
+#             {
+#                 "role": "system",
+#                 "content": f"""
+#     You generate Snowpark Pyspark code.
+#     Use the schema below.
 
-    Schema:
-    {schema_doc}
+#     Schema:
+#     {schema_doc}
 
-    Return a dataframe with the answer.
-    """,
-            },
-            {"role": "user", "content": question},
-        ],
-    )
+#     Return a dataframe with the answer.
+#     """,
+#             },
+#             {"role": "user", "content": question},
+#         ],
+#     )
 
 
 def main():

@@ -29,9 +29,13 @@ from retrieve_context import retrieve_relevant_docs
 
 def main():
     question = """
+    Question:   
         What price should the surge surcharge for tracking number 1Z97Y6036659856231 
         get for agreement 234?
     """
+    print(question)
+    print("--------------------------------")
+    print("Answer:")
     print(get_augmented_answer(client, question).choices[0].message.content)
 
 

@@ -39,5 +39,3 @@ for file_path in Path(FOLDER_PATH).rglob("*.json"):
 
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     json.dump(embedded_docs, f, indent=2)
-
-print("Done.")

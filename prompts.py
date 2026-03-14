@@ -1,5 +1,6 @@
 from retrieve_context import retrieve_relevant_docs
 
+
 def get_simple_answer(client, question, schema_doc):
     return client.responses.create(
         model="gpt-4.1-mini",
@@ -40,7 +41,7 @@ def get_augmented_answer(client=None, intial_question=None):
             function_docs.append(doc["output"])
             example_docs.append(doc["examples"])
 
-    augmented_prompt = f'''
+    augmented_prompt = f"""
     SYSTEM INSTRUCTION
     SYSTEM INSTRUCTION:
     You are a shipping agreement analysis assistant.
@@ -66,7 +67,7 @@ def get_augmented_answer(client=None, intial_question=None):
 
     REQUIRED OUTPUT FORMAT
     Return the answer as a chain of python functions with the correct parameters to get the answer.
-    '''
+    """
     # print(augmented_prompt)
 
     return client.chat.completions.create(

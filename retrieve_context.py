@@ -8,6 +8,7 @@ from embed_docs import embed_text
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
+
 def retrieve_relevant_docs(
     client, query: str, json_file: str = "embedded_docs.json", k: int = 5
 ):

@@ -4,7 +4,7 @@
   "function_name": "get_normalized_surcharge",
   "input": "dataframe with table schema of premodel",
   "output": "dataframe with two extra columns: surcharge_id and surcharge_name",
-  "description": "For an input dataframe of charges, adds two columns: surcharge_id and surcharge_name to the dataframe. Use this function if the query is about surcharge information but surcharge_id and surcharge_name are not present in the shipments table. Charge descriptions are named differently in carrier invoice files but may represent the same surcharge and pricing. Retrieving surcharge_id and surcharge_name is necessary to correctly identify the charge type.",
+  "description": "For an input dataframe of charges, adds two columns: surcharge_id and surcharge_name to the dataframe. Use this function if the query is about surcharge information but surcharge_id and surcharge_name are not present in the shipments table. Charge descriptions are named differently in carrier invoice files but may represent the same surcharge and pricing. Retrieving surcharge_id and surcharge_name is necessary to correctly identify the charge type. If required surcharge classification fields (such as residential, Alaska/Hawaii, delivery area, or other surcharge flags) are not already present in the dataframe, this function will automatically derive and add them before determining the normalized surcharge_id and surcharge_name.",
   "examples": [
     {
       "question": "What would the normalized surcharge name be for the demand surcharge on tracking number xyz?",

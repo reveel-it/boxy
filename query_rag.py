@@ -28,7 +28,10 @@ from retrieve_context import retrieve_relevant_docs
 
 
 def main():
-    question = "What surcharge id should the surge surcharge for tracking number 1Z97Y6036659856231 get?"
+    question = """
+        What price should the surge surcharge for tracking number 1Z97Y6036659856231 
+        get for agreement 234?
+    """
     print(get_augmented_answer(client, question).choices[0].message.content)
 
 

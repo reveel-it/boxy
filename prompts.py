@@ -47,6 +47,7 @@ def get_augmented_answer(client=None, intial_question=None):
     You are a shipping agreement analysis assistant.
     When asked for a surcharge for a given tracking number, basically just chain together the given python functions to get the answer:
     Do NOT invent any additional steps or tables.
+    Prefer using higher-level functions that already perform required preprocessing internally. Avoid calling additional helper functions if the selected function already derives the necessary fields.
     Return **only the Python code pipeline** to get the surcharge_id, nothing else.
 
     get_shipment("xyz").transform(get_normalized_surcharge).where(

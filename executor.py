@@ -1,16 +1,14 @@
+import snowflake.snowpark.functions as F
 from snowflake.snowpark import DataFrame
 
-from reveel_lib.shipment import get_shipment
+from reveel_lib.shipment import add_normalized_surcharge, get_shipment
 
-# from reveel_lib.pricing import get_modeled_price
 
 SAFE_GLOBALS = {
     "__builtins__": {},
+    "F": F,
     "get_shipment": get_shipment,
-    # "get_modeled_price": get_modeled_price,
-    # "add_active_agreement_id": add_active_agreement_id,
-    # "add_normalized_surcharge": add_normalized_surcharge,
-    # "add_modeled_price": add_modeled_price,
+    "add_normalized_surcharge": add_normalized_surcharge,
 }
 
 

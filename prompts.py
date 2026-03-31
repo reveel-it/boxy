@@ -42,7 +42,6 @@ def get_augmented_answer(client=None, intial_question=None):
             example_docs.append(doc["examples"])
 
     augmented_prompt = f"""
-    SYSTEM INSTRUCTION
     SYSTEM INSTRUCTION:
     You are a shipping agreement analysis assistant.
     When asked for a surcharge for a given tracking number, basically just chain together the given python functions to get the answer:
@@ -50,8 +49,8 @@ def get_augmented_answer(client=None, intial_question=None):
     Prefer using higher-level functions that already perform required preprocessing internally. Avoid calling additional helper functions if the selected function already derives the necessary fields.
     Return **only the Python code pipeline** to get the surcharge_id, nothing else.
 
-    get_shipment("xyz").transform(get_normalized_surcharge).where(
-        F.col("charge_description").rlike("(?i)demand")
+    get_shipment("xyz").transform(add_normalized_surcharge).where(
+        F.lower(F.col("charge_description")).like("%demand%")
     ).select("surcharge_name")
 
     TASK
@@ -67,7 +66,7 @@ def get_augmented_answer(client=None, intial_question=None):
     {example_docs}
 
     REQUIRED OUTPUT FORMAT
-    Return the answer as a chain of python functions with the correct parameters to get the answer.
+    Return the answer as a chain of python functions with the correct parameters to get the answer. Only use functions that are in the docs.
     """
     # print(augmented_prompt)
 

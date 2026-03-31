@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reveel-snowflake"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+  "reveel-snowflake @ git+ssh://git@github.com/reveel-it/snowflake.git@dev"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["reveel_snowflake*"]

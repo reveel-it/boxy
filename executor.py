@@ -1,7 +1,11 @@
 import snowflake.snowpark.functions as F
 from snowflake.snowpark import DataFrame
 
-from reveel_lib.shipment import add_normalized_surcharge, get_shipment
+from reveel_lib.shipment import (
+    add_modeled_price,
+    add_normalized_surcharge,
+    get_shipment,
+)
 
 
 SAFE_GLOBALS = {
@@ -9,6 +13,7 @@ SAFE_GLOBALS = {
     "F": F,
     "get_shipment": get_shipment,
     "add_normalized_surcharge": add_normalized_surcharge,
+    "add_modeled_price": add_modeled_price,
 }
 
 

@@ -4,13 +4,15 @@ from snowflake.snowpark import DataFrame
 from snowflake.snowpark.context import get_active_session
 import notebooks.utils.normalization as norm
 import notebooks.utils.surcharges as sur
-from notebooks.modeling_library import date_overrides, load_data, model
+from notebooks.modeling_library import date_overrides, model
 from notebooks.misc_utils import (
     join_charge_bands,
     join_executed_agreements,
     lower_columns,
 )
 import notebooks.utils.table_names as tn
+
+from reveel_lib.utils import load_data_xforms
 
 
 session = get_active_session()
@@ -45,9 +47,16 @@ def add_normalized_surcharge(df: DataFrame) -> DataFrame:
     return norm.get_normalized_surcharge(df).distinct()
 
 
-def add_modeled_price(df: DataFrame) -> DataFrame:
-    if "agreement_id" not in lower_columns(df):
+def get_modeled_price(
+    tracking_number: str,
+    agreement_id: str | None = None,
+) -> DataFrame:
+    df, _ = get_shipment(tracking_number).transform(load_data_xforms)
+
+    if not agreement_id:
         df = add_active_agreement_info(df)
+    else:
+        df = df.withColumn("agreement_id", F.lit(agreement_id))
 
     if "surcharge_id" not in lower_columns(df):
         df = add_normalized_surcharge(df)
@@ -58,6 +67,7 @@ def add_modeled_price(df: DataFrame) -> DataFrame:
 
 
 def add_active_agreement_info(df: DataFrame) -> DataFrame:
+    df.show()
     client_info = (
         session.table(tn.CLIENT_INFO)
         .where(F.col("agreement_id").isNotNull() & (~F.col("is_demo")))
@@ -71,6 +81,7 @@ def add_active_agreement_info(df: DataFrame) -> DataFrame:
         lsuffix="",
         rsuffix="_r",
     )
+    add_client_info.show()
 
     with_agreement_ids = add_client_info.transform(join_executed_agreements).select(
         add_client_info["*"],
@@ -83,5 +94,7 @@ def add_active_agreement_info(df: DataFrame) -> DataFrame:
     )
 
     with_date_cols = date_overrides(with_charge_bands)
+
+    with_date_cols.show()
 
     return with_date_cols

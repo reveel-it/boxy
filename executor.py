@@ -2,18 +2,18 @@ import snowflake.snowpark.functions as F
 from snowflake.snowpark import DataFrame
 
 from reveel_lib.shipment import (
-    add_modeled_price,
     add_normalized_surcharge,
+    get_modeled_price,  
     get_shipment,
 )
 
 
-SAFE_GLOBALS = {
+SAFE_GLOBALS = {    
     "__builtins__": {},
     "F": F,
     "get_shipment": get_shipment,
     "add_normalized_surcharge": add_normalized_surcharge,
-    "add_modeled_price": add_modeled_price,
+    "get_modeled_price": get_modeled_price,
 }
 
 

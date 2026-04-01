@@ -32,6 +32,8 @@ def load_data_xforms(
                 "old_net_amount": F.col("net_amount").cast(DecimalType(38, 18)),
             }
         )
+        .transform(sur.add_surcharge_flags)
+        .transform(norm.get_normalized_surcharge)
         .transform(write_tmp_table)
     )
 
@@ -110,7 +112,9 @@ def load_data_xforms(
         {
             "is_oversize": F.boolor_agg(
                 F.col("surcharge_id").eqNullSafe(F.lit(sur.surcharge_id_oversize_comm))
-                | F.col("surcharge_id").eqNullSafe(F.lit(sur.surcharge_id_oversize_resi))
+                | F.col("surcharge_id").eqNullSafe(
+                    F.lit(sur.surcharge_id_oversize_resi)
+                )
             ).over(Window.partitionBy("shipment_id", "lead_shipment_id")),
             "is_ahs_dim": F.boolor_agg(
                 F.col("surcharge_id").eqNullSafe(F.lit(sur.surcharge_id_ahs_dim))

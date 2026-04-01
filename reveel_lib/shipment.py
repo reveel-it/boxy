@@ -18,6 +18,11 @@ from reveel_lib.utils import load_data_xforms
 session = get_active_session()
 
 
+def _unpack_load_result(result):
+    """load_data_xforms returns either a DataFrame or (main_df, ups_without_tracking)."""
+    return result[0] if isinstance(result, tuple) else result
+
+
 def get_shipment(tracking_number: str) -> DataFrame:
     return session.table("staging.charge.premodel").where(
         F.col("tracking_number") == tracking_number
@@ -51,15 +56,14 @@ def get_modeled_price(
     tracking_number: str,
     agreement_id: str | None = None,
 ) -> DataFrame:
-    df, _ = get_shipment(tracking_number).transform(load_data_xforms)
+    df = get_shipment(tracking_number).transform(load_data_xforms)
+
+    df = df[0] if isinstance(df, tuple) else df
 
     if not agreement_id:
         df = add_active_agreement_info(df)
     else:
         df = df.withColumn("agreement_id", F.lit(agreement_id))
-
-    if "surcharge_id" not in lower_columns(df):
-        df = add_normalized_surcharge(df)
 
     return model(df, env="staging", is_force_lookup=True).select(
         "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
@@ -81,7 +85,6 @@ def add_active_agreement_info(df: DataFrame) -> DataFrame:
         lsuffix="",
         rsuffix="_r",
     )
-    add_client_info.show()
 
     with_agreement_ids = add_client_info.transform(join_executed_agreements).select(
         add_client_info["*"],
@@ -93,8 +96,4 @@ def add_active_agreement_info(df: DataFrame) -> DataFrame:
         with_agreement_ids["*"], "average_weekly"
     )
 
-    with_date_cols = date_overrides(with_charge_bands)
-
-    with_date_cols.show()
-
-    return with_date_cols
+    return date_overrides(with_charge_bands)

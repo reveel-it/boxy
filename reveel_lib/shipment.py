@@ -17,6 +17,97 @@ from reveel_lib.utils import load_data_xforms
 
 session = get_active_session()
 
+# Columns to retain in explain mode (repricing / audit). Matched case-insensitively to
+# whatever Snowpark has after model(); missing names are skipped.
+model_explain_cols = [
+    "tracking_number",
+    "lead_shipment_number",
+    "lead_shipment_id",
+    "shipment_id",
+    "agreement_id",
+    "account_number",
+    "carrier",
+    "invoice_date",
+    "payor",
+    "surcharge_id",
+    "surcharge_name",
+    "charge_description",
+    "is_transportation_charge",
+    "is_fuel_calc_surcharge",
+    "gross",
+    "net_amount",
+    "old_gross",
+    "old_net_amount",
+    "new_gross",
+    "new_net",
+    "discount_sum",
+    "currency_sum",
+    "full_discount_percent",
+    "term_type",
+    "term_service",
+    "earned_type",
+    "earned_band",
+    "average_weekly",
+    "discount_amount",
+    "discount_units",
+    "discount_zone",
+    "discount_weight",
+    "discount_exclude_hundredweight",
+    "discount_is_flat_rate",
+    "discount_less_than_one",
+    "rate_capped",
+    "is_rate_capped",
+    "minimum_charge",
+    "min_def",
+    "new_min",
+    "min_discount",
+    "pre_rate_cap_minimum_charge",
+    "is_hit_min",
+    "net_hitting_min",
+    "unrealized_savings",
+    "minimum_reduction",
+    "net_subtotal",
+    "trans_subtotal",
+    "fuel_subtotal",
+    "tp_subtotal",
+    "other_subtotal",
+    "updated_gross",
+    "fuel_rate",
+    "new_fuel_gross",
+    "tp_rate",
+    "new_tp_gross",
+    "other_charges_net",
+    "tc_net",
+    "fuel_net",
+    "zone",
+    "import_export",
+    "service",
+    "new_service_type",
+    "is_hwt",
+    "is_multipiece",
+    "is_flat_rate",
+    "less_than_one",
+    "billed_weight",
+    "original_billed_weight",
+    "modeled_billed_weight",
+    "raw_modeled_billed_weight",
+    "hwt_billed_weight",
+    "dim_divisor",
+    "dim_length",
+    "dim_width",
+    "dim_height",
+    "volume",
+    "num_of_trackings",
+    "norm_container_type",
+    "skip",
+]
+
+
+def _select_repricing_explain_columns(df: DataFrame) -> DataFrame:
+    by_lower = {c.lower(): c for c in df.columns}
+    present = [by_lower[n] for n in _REPRICING_EXPLAIN_COLUMNS if n in by_lower]
+    return df.select(present) if present else df
+
 
 def _unpack_load_result(result):
     """load_data_xforms returns either a DataFrame or (main_df, ups_without_tracking)."""
@@ -55,6 +146,7 @@ def add_normalized_surcharge(df: DataFrame) -> DataFrame:
 def get_modeled_price(
     tracking_number: str,
     agreement_id: str | None = None,
+    explain: bool = False,
 ) -> DataFrame:
     df = get_shipment(tracking_number).transform(load_data_xforms)
 
@@ -65,13 +157,18 @@ def get_modeled_price(
     else:
         df = df.withColumn("agreement_id", F.lit(agreement_id))
 
-    return model(df, env="staging", is_force_lookup=True).select(
-        "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
-    )
+    with_model_price = model(df, env="staging", is_force_lookup=True)
+
+    if explain:
+        return with_model_price.select(
+            "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
+        )
+    else:
+        return with_model_price.select(*model_explain_cols)
+
 
 
 def add_active_agreement_info(df: DataFrame) -> DataFrame:
-    df.show()
     client_info = (
         session.table(tn.CLIENT_INFO)
         .where(F.col("agreement_id").isNotNull() & (~F.col("is_demo")))

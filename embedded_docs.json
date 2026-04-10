@@ -8444,9 +8444,9 @@
     "doc_id": "get_modeled_price",
     "doc_type": "function",
     "function_name": "get_modeled_price",
-    "input": "tracking_number (str); optional agreement_id (str). If agreement_id is omitted or empty, joins client/executed-agreement data to populate agreement_id. Otherwise uses the given agreement_id.",
-    "output": "dataframe with tracking_number, charge_description, and modeled_price (final modeled new_net per charge)",
-    "description": "Loads premodel charge rows for a single tracking number via load_data, then runs the pricing model for that shipment. If agreement_id is not provided, runs add_active_agreement_info to resolve the active agreement. If surcharge_id is missing from the dataframe, runs add_normalized_surcharge first so each charge is classified. Returns model output narrowed to tracking_number, charge_description, and modeled_price (alias of new_net). Use get_modeled_price(\"my_tracking\") when the active agreement should apply; pass a second argument for a specific agreement id.",
+    "input": "tracking_number (str); optional agreement_id (str); optional explain (bool, default False). If agreement_id is omitted or empty, joins client/executed-agreement data to populate agreement_id. Otherwise uses the given agreement_id. When explain=True, the result includes columns that show how each charge was modeled (for debugging and narrative answers).",
+    "output": "dataframe with tracking_number, charge_description, and modeled_price (final modeled new_net per charge); with explain=True, additional explainability columns are retained.",
+    "description": "Loads premodel charge rows for a single tracking number via load_data, then runs the pricing model for that shipment. If agreement_id is not provided, runs add_active_agreement_info to resolve the active agreement. If surcharge_id is missing from the dataframe, runs add_normalized_surcharge first so each charge is classified. Returns model output narrowed to tracking_number, charge_description, and modeled_price (alias of new_net). Use get_modeled_price(\"my_tracking\") when the active agreement should apply; pass a second argument for a specific agreement id. Use explain=True when the user asks how modeled prices were derived for each charge.",
     "examples": [
       {
         "question": "What would tracking xyz cost for the current active agreement?",
@@ -8459,6 +8459,10 @@
       {
         "question": "Show modeled prices for test tracking using default agreement resolution.",
         "answer": "get_modeled_price(\"test_tracking_number\")"
+      },
+      {
+        "question": "What would tracking xyz cost for the current active agreement? Explain how you got the modeled price for each charge.",
+        "answer": "get_modeled_price(\"xyz\", explain=True)"
       }
     ],
     "description_embedding": [

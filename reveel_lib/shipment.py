@@ -12,6 +12,7 @@ from notebooks.misc_utils import (
 )
 import notebooks.utils.table_names as tn
 
+from reveel_lib.explain import model_explain
 from reveel_lib.utils import load_data_xforms
 
 
@@ -145,11 +146,14 @@ def add_normalized_surcharge(df: DataFrame) -> DataFrame:
 def get_modeled_price(
     tracking_number: str,
     agreement_id: str | None = None,
+    *,
     explain: bool = False,
 ) -> DataFrame:
-    df = get_shipment(tracking_number).transform(load_data_xforms)
+    df = get_shipment(tracking_number)
+    if "surcharge_id" not in lower_columns(df):
+        df = add_normalized_surcharge(df)
 
-    df = df[0] if isinstance(df, tuple) else df
+    df = _unpack_load_result(load_data_xforms(df))
 
     if not agreement_id:
         df = add_active_agreement_info(df)
@@ -164,11 +168,6 @@ def get_modeled_price(
     return with_model_price.select(
         "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
     )
-
-
-def model_explain(df: DataFrame) -> DataFrame:
-    pass
-
 
 
 def add_active_agreement_info(df: DataFrame) -> DataFrame:

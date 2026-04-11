@@ -20,8 +20,10 @@ SAFE_GLOBALS = {
 def run_generated_code(code: str):
     import importlib
 
+    import reveel_lib.explain as explain_mod
     import reveel_lib.shipment as shipment_mod
 
+    importlib.reload(explain_mod)
     importlib.reload(shipment_mod)
     g = {
         **SAFE_GLOBALS,

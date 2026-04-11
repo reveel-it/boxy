@@ -159,10 +159,15 @@ def get_modeled_price(
     with_model_price = model(df, env="staging", is_force_lookup=True)
 
     if explain:
-        return _select_repricing_explain_columns(with_model_price)
+        with_debug_cols = _select_repricing_explain_columns(with_model_price)
+        return model_explain(with_debug_cols)
     return with_model_price.select(
         "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
     )
+
+
+def model_explain(df: DataFrame) -> DataFrame:
+    pass
 
 
 

@@ -53,7 +53,7 @@ model_explain_cols = [
     "discount_zone",
     "discount_weight",
     "discount_exclude_hundredweight",
-    "discount_is_flat_rate",
+    # Term-side discount_is_flat_rate is not in term_keep_cols; use is_flat_rate on the charge.
     "discount_less_than_one",
     "rate_capped",
     "is_rate_capped",
@@ -105,12 +105,11 @@ model_explain_cols = [
 
 def _select_repricing_explain_columns(df: DataFrame) -> DataFrame:
     by_lower = {c.lower(): c for c in df.columns}
-    present = [by_lower[n] for n in _REPRICING_EXPLAIN_COLUMNS if n in by_lower]
+    present = [by_lower[n] for n in model_explain_cols if n in by_lower]
     return df.select(present) if present else df
 
 
 def _unpack_load_result(result):
-    """load_data_xforms returns either a DataFrame or (main_df, ups_without_tracking)."""
     return result[0] if isinstance(result, tuple) else result
 
 
@@ -160,11 +159,10 @@ def get_modeled_price(
     with_model_price = model(df, env="staging", is_force_lookup=True)
 
     if explain:
-        return with_model_price.select(
-            "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
-        )
-    else:
-        return with_model_price.select(*model_explain_cols)
+        return _select_repricing_explain_columns(with_model_price)
+    return with_model_price.select(
+        "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")
+    )
 
 
 

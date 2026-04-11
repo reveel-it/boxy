@@ -18,7 +18,18 @@ SAFE_GLOBALS = {
 
 
 def run_generated_code(code: str):
-    output_df = eval(code, SAFE_GLOBALS)
+    import importlib
+
+    import reveel_lib.shipment as shipment_mod
+
+    importlib.reload(shipment_mod)
+    g = {
+        **SAFE_GLOBALS,
+        "get_shipment": shipment_mod.get_shipment,
+        "add_normalized_surcharge": shipment_mod.add_normalized_surcharge,
+        "get_modeled_price": shipment_mod.get_modeled_price,
+    }
+    output_df = eval(code, g)
 
     if not isinstance(output_df, DataFrame):
         raise ValueError("The output of the code is not a DataFrame.")

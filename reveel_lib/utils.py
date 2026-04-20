@@ -1,3 +1,4 @@
+from notebooks.misc_utils import lower_columns
 import snowflake.snowpark.functions as F
 from snowflake.snowpark import DataFrame, Window
 from snowflake.snowpark.types import DecimalType
@@ -21,21 +22,21 @@ def load_data_xforms(
     start_date: str | None = None,
     end_date: str | None = None,
 ):
-    filtered_data = (
-        df.transform(get_usd_spend)
-        .withColumns(
-            {
-                "lead_shipment_number": F.coalesce(
-                    "lead_shipment_number", "tracking_number"
-                ),
-                "old_gross": F.col("gross").cast(DecimalType(38, 18)),
-                "old_net_amount": F.col("net_amount").cast(DecimalType(38, 18)),
-            }
-        )
-        .transform(sur.add_surcharge_flags)
-        .transform(norm.get_normalized_surcharge)
-        .transform(write_tmp_table)
+    filtered_data = df.transform(get_usd_spend).withColumns(
+        {
+            "lead_shipment_number": F.coalesce(
+                "lead_shipment_number", "tracking_number"
+            ),
+            "old_gross": F.col("gross").cast(DecimalType(38, 18)),
+            "old_net_amount": F.col("net_amount").cast(DecimalType(38, 18)),
+        }
     )
+
+    if "surcharge_id" not in lower_columns(filtered_data):
+        filtered_data = filtered_data.transform(sur.add_surcharge_flags)
+        filtered_data = filtered_data.transform(norm.get_normalized_surcharge)
+
+    filtered_data = filtered_data.transform(write_tmp_table)
 
     ups_data = filtered_data.where(F.col("carrier") == "ups")
     fedex_data = filtered_data.where(F.col("carrier") == "fedex")

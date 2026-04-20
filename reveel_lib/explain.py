@@ -117,20 +117,26 @@ def model_explain(df: DataFrame) -> DataFrame:
     gross_for_pct = F.coalesce(
         _c(df, "updated_gross"), _c(df, "new_gross"), _c(df, "gross")
     )
-    pct_amount = (
-        gross_for_pct * F.coalesce(_c(df, "discount_sum").cast("double"), F.lit(0.0))
+    pct_amount = gross_for_pct * F.coalesce(
+        _c(df, "discount_sum").cast("double"), F.lit(0.0)
     )
 
     base_arr = F.array(
         F.struct(
             F.lit("aggregated_percent_discounts").alias("type"),
-            F.coalesce(_c(df, "discount_sum").cast("double"), F.lit(0.0)).alias("value"),
+            F.coalesce(_c(df, "discount_sum").cast("double"), F.lit(0.0)).alias(
+                "value"
+            ),
             pct_amount.alias("amount"),
         ),
         F.struct(
             F.lit("aggregated_currency_discounts").alias("type"),
-            F.coalesce(_c(df, "currency_sum").cast("double"), F.lit(0.0)).alias("value"),
-            F.coalesce(_c(df, "currency_sum").cast("double"), F.lit(0.0)).alias("amount"),
+            F.coalesce(_c(df, "currency_sum").cast("double"), F.lit(0.0)).alias(
+                "value"
+            ),
+            F.coalesce(_c(df, "currency_sum").cast("double"), F.lit(0.0)).alias(
+                "amount"
+            ),
         ),
     )
 
@@ -138,11 +144,13 @@ def model_explain(df: DataFrame) -> DataFrame:
         F.struct(
             F.lit("minimum_floor").alias("type"),
             F.coalesce(_c(df, "new_min").cast("double"), F.lit(0.0)).alias("threshold"),
-            F.coalesce(_c(df, "min_discount").cast("double"), F.lit(0.0)).alias("value"),
-            F.coalesce(_c(df, "minimum_charge").cast("double"), F.lit(0.0)).alias("amount"),
-            F.coalesce(_c(df, "is_hit_min"), F.lit(0))
-            .cast("boolean")
-            .alias("applied"),
+            F.coalesce(_c(df, "min_discount").cast("double"), F.lit(0.0)).alias(
+                "value"
+            ),
+            F.coalesce(_c(df, "minimum_charge").cast("double"), F.lit(0.0)).alias(
+                "amount"
+            ),
+            F.coalesce(_c(df, "is_hit_min"), F.lit(0)).cast("boolean").alias("applied"),
         )
     )
 
@@ -160,9 +168,9 @@ def model_explain(df: DataFrame) -> DataFrame:
         )
         .cast("double")
         .alias("billed_weight"),
-        _c(df, "is_transportation_charge").cast(BooleanType()).alias(
-            "is_transportation_charge"
-        ),
+        _c(df, "is_transportation_charge")
+        .cast(BooleanType())
+        .alias("is_transportation_charge"),
         _c(df, "surcharge_id").cast(StringType()).alias("surcharge_id"),
         _c(df, "is_flat_rate").cast(BooleanType()).alias("is_flat_rate"),
         _c(df, "is_hwt").cast(BooleanType()).alias("is_hwt"),

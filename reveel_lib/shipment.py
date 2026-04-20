@@ -183,7 +183,7 @@ def add_active_agreement_info(df: DataFrame) -> DataFrame:
         "inner",
         lsuffix="",
         rsuffix="_r",
-    )
+    ).select(*[df[c] for c in df.columns], client_info["client_id"])
 
     with_agreement_ids = add_client_info.transform(join_executed_agreements).select(
         add_client_info["*"],

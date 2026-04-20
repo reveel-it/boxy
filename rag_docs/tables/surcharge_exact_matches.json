@@ -4,7 +4,10 @@
   "catalog": "prod",
   "schema": "surcharges",
   "table_name": "exact_matches",
-  "description": "A mapping table that identifies what surcharge_id and surcharge_name a particular surcharge should have given the values of the other columns. Primary use case: determine the normalized surcharge_id and surcharge_name for invoice charges based on shipment attributes and charge characteristics.",
+  "description": [
+    "A mapping table that identifies what surcharge_id and surcharge_name a particular surcharge should have given the values of the other columns.",
+    "Primary use case: determine the normalized surcharge_id and surcharge_name for invoice charges based on shipment attributes and charge characteristics."
+  ],
   "grain": [
     "cleaned_cd",
     "is_alaska",

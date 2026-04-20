@@ -4,7 +4,11 @@
   "function_name": "add_active_agreement_id",
   "input": "dataframe with charge rows",
   "output": "dataframe with one extra column: agreement_id",
-  "description": "For an input dataframe of charge rows, adds a column called agreement_id that represents the shipper's currently active agreement id. Use this function when a query requires identifying which agreement is active for a shipment or charge row. The function determines the applicable active agreement for the shipper associated with the shipment and appends the agreement_id to each row.",
+  "description": [
+    "For an input dataframe of charge rows, adds a column called agreement_id that represents the shipper's currently active agreement id.",
+    "Use this function when a query requires identifying which agreement is active for a shipment or charge row.",
+    "The function determines the applicable active agreement for the shipper associated with the shipment and appends the agreement_id to each row."
+  ],
   "examples": [
     {
       "question": "What is the active agreement id for tracking number xyz?",

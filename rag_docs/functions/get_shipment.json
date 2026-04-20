@@ -4,7 +4,12 @@
   "function_name": "get_shipment",
   "input": "List[str]: (tracking_number(s), lead_shipment_number(s), shipment_id(s), lead_shipment_id(s))",
   "output": "dataframe with schema same as premodel table.",
-  "description": "Returns shipment charge rows for a given tracking number or other shipment identifiers.\n\nTypical use cases:\n- Find a shipment by tracking number\n- Determine shipment attributes needed for repricing\n- Join to agreements or rate tables",
+  "description": [
+    "Returns shipment charge rows for a given tracking number or other shipment identifiers.",
+    "Typical use case: find a shipment by tracking number.",
+    "Typical use case: determine shipment attributes needed for repricing.",
+    "Typical use case: join to agreements or rate tables."
+  ],
   "source_table": "prod.charge.premodel",
   "examples": [
     {

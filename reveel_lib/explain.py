@@ -121,7 +121,7 @@ def model_explain(df: DataFrame) -> DataFrame:
         _c(df, "discount_sum").cast("double"), F.lit(0.0)
     )
 
-    base_arr = F.array(
+    base_arr = F.array_construct(
         F.struct(
             F.lit("aggregated_percent_discounts").alias("type"),
             F.coalesce(_c(df, "discount_sum").cast("double"), F.lit(0.0)).alias(
@@ -140,7 +140,7 @@ def model_explain(df: DataFrame) -> DataFrame:
         ),
     )
 
-    min_arr = F.array(
+    min_arr = F.array_construct(
         F.struct(
             F.lit("minimum_floor").alias("type"),
             F.coalesce(_c(df, "new_min").cast("double"), F.lit(0.0)).alias("threshold"),

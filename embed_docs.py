@@ -30,6 +30,8 @@ for file_path in Path(FOLDER_PATH).rglob("*.json"):
         doc = json.load(f)
 
     description = doc.get("description")
+    if isinstance(description, list):
+        description = " ".join(description)
 
     if description:
         embedding = embed_text(client, description)

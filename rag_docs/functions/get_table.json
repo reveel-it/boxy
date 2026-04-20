@@ -4,7 +4,9 @@
   "function_name": "get_table",
   "input": "str (table name)",
   "output": "dataframe",
-  "description": "Returns the appropriate table as a dataframe so the RAG can start applying other pyspark transformations or specific functions on it.",
+  "description": [
+    "Returns the appropriate table as a dataframe so the RAG can start applying other pyspark transformations or specific functions on it."
+  ],
   "examples": [
     {
       "code": "premodel = get_table(\"prod.charge.premodel\")"

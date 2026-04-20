@@ -47,6 +47,8 @@ def get_augmented_answer(client=None, intial_question=None):
     When asked for a surcharge for a given tracking number, basically just chain together the given python functions to get the answer:
     Do NOT invent any additional steps or tables.
     Prefer using higher-level functions that already perform required preprocessing internally. Avoid calling additional helper functions if the selected function already derives the necessary fields.
+    Critical rule: if you call get_modeled_price(..., explain=True), do NOT chain .select(...).
+    In explain mode, you may chain .where(...) filters only.
     Return **only the Python code pipeline** to get the surcharge_id, nothing else.
 
     get_shipment("xyz").transform(add_normalized_surcharge).where(
@@ -78,7 +80,8 @@ def get_augmented_answer(client=None, intial_question=None):
                 "content": (
                     "You are a shipping agreement analysis assistant. "
                     "Use only the provided tables, functions, and context. "
-                    "Do not invent schema fields or surcharge types."
+                    "Do not invent schema fields or surcharge types. "
+                    "If get_modeled_price is called with explain=True, do not add a .select(...) chain."
                 ),
             },
             {

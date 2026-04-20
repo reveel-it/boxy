@@ -4,7 +4,11 @@
   "catalog": "prod",
   "schema": "rates",
   "table_name": "carrier",
-  "description": "The carrier_rates table stores normalized shipping rate data by carrier, service level, shipping zone, and billable weight. Each row represents a single price point for a specific combination of carrier, service, zone, and weight. Primary use cases: retrieve transportation rates, compare service pricing within a carrier, identify cheapest services for a given zone and weight, and analyze rate differences across zones.",
+  "description": [
+    "The carrier_rates table stores normalized shipping rate data by carrier, service level, shipping zone, and billable weight.",
+    "Each row represents a single price point for a specific combination of carrier, service, zone, and weight.",
+    "Primary use cases: retrieve transportation rates, compare service pricing within a carrier, identify cheapest services for a given zone and weight, and analyze rate differences across zones."
+  ],
   "grain": [
     "carrier",
     "service",

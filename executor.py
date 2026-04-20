@@ -36,4 +36,4 @@ def run_generated_code(code: str):
     if not isinstance(output_df, DataFrame):
         raise ValueError("The output of the code is not a DataFrame.")
 
-    output_df.show()
+    output_df.show(max_with=1000)

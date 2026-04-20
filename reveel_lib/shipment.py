@@ -164,6 +164,7 @@ def get_modeled_price(
 
     if explain:
         with_debug_cols = _select_repricing_explain_columns(with_model_price)
+        print("modeling explaining")
         return model_explain(with_debug_cols)
     return with_model_price.select(
         "tracking_number", "charge_description", F.col("new_net").alias("modeled_price")

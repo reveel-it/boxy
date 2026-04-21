@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import snowflake.snowpark.functions as F
 from snowflake.snowpark import DataFrame
-from snowflake.snowpark.functions import try_cast
 from snowflake.snowpark.types import (
     ArrayType,
     BooleanType,
@@ -40,8 +39,9 @@ explain_schema = StructType(
                 [
                     StructField("carrier", StringType(), True),
                     StructField("service", StringType(), True),
+                    StructField("charge_description", StringType(), True),
                     StructField("package_type", StringType(), True),
-                    StructField("zone", DoubleType(), True),
+                    StructField("zone", StringType(), True),
                     StructField("billed_weight", DoubleType(), True),
                     StructField("is_transportation_charge", BooleanType(), True),
                     StructField("surcharge_id", StringType(), True),
@@ -118,38 +118,46 @@ def model_explain(df: DataFrame) -> DataFrame:
         _c(df, "updated_gross"), _c(df, "new_gross"), _c(df, "gross")
     )
     pct_amount = gross_for_pct * F.coalesce(
-        _c(df, "discount_sum").cast("double"), F.lit(0.0)
+        _c(df, "discount_sum").cast(DoubleType()), F.lit(0.0)
     )
 
     base_arr = F.array_construct(
         F.struct(
             F.lit("aggregated_percent_discounts").alias("type"),
-            F.coalesce(_c(df, "discount_sum").cast("double"), F.lit(0.0)).alias(
-                "value"
-            ),
-            pct_amount.alias("amount"),
+            F.round(
+                F.coalesce(_c(df, "discount_sum").cast(DoubleType()), F.lit(0.0)),
+                2,
+            ).alias("value"),
+            F.round(pct_amount.cast(DoubleType()), 2).alias("amount"),
         ),
         F.struct(
             F.lit("aggregated_currency_discounts").alias("type"),
-            F.coalesce(_c(df, "currency_sum").cast("double"), F.lit(0.0)).alias(
-                "value"
-            ),
-            F.coalesce(_c(df, "currency_sum").cast("double"), F.lit(0.0)).alias(
-                "amount"
-            ),
+            F.round(
+                F.coalesce(_c(df, "currency_sum").cast(DoubleType()), F.lit(0.0)),
+                2,
+            ).alias("value"),
+            F.round(
+                F.coalesce(_c(df, "currency_sum").cast(DoubleType()), F.lit(0.0)),
+                2,
+            ).alias("amount"),
         ),
     )
 
     min_arr = F.array_construct(
         F.struct(
             F.lit("minimum_floor").alias("type"),
-            F.coalesce(_c(df, "new_min").cast("double"), F.lit(0.0)).alias("threshold"),
-            F.coalesce(_c(df, "min_discount").cast("double"), F.lit(0.0)).alias(
-                "value"
-            ),
-            F.coalesce(_c(df, "minimum_charge").cast("double"), F.lit(0.0)).alias(
-                "amount"
-            ),
+            F.round(
+                F.coalesce(_c(df, "new_min").cast(DoubleType()), F.lit(0.0)),
+                2,
+            ).alias("threshold"),
+            F.round(
+                F.coalesce(_c(df, "min_discount").cast(DoubleType()), F.lit(0.0)),
+                2,
+            ).alias("value"),
+            F.round(
+                F.coalesce(_c(df, "minimum_charge").cast(DoubleType()), F.lit(0.0)),
+                2,
+            ).alias("amount"),
             F.coalesce(_c(df, "is_hit_min"), F.lit(0)).cast("boolean").alias("applied"),
         )
     )
@@ -159,15 +167,17 @@ def model_explain(df: DataFrame) -> DataFrame:
         F.coalesce(_c(df, "service"), _c(df, "new_service_type"))
         .cast(StringType())
         .alias("service"),
+        _c(df, "charge_description").cast(StringType()).alias("charge_description"),
         _c(df, "norm_container_type").cast(StringType()).alias("package_type"),
-        try_cast(_c(df, "zone").cast(StringType()), DoubleType()).alias("zone"),
-        F.coalesce(
-            _c(df, "billed_weight"),
-            _c(df, "modeled_billed_weight"),
-            _c(df, "original_billed_weight"),
-        )
-        .cast("double")
-        .alias("billed_weight"),
+        _c(df, "zone").cast(StringType()).alias("zone"),
+        F.round(
+            F.coalesce(
+                _c(df, "billed_weight"),
+                _c(df, "modeled_billed_weight"),
+                _c(df, "original_billed_weight"),
+            ).cast(DoubleType()),
+            2,
+        ).alias("billed_weight"),
         _c(df, "is_transportation_charge")
         .cast(BooleanType())
         .alias("is_transportation_charge"),
@@ -177,7 +187,10 @@ def model_explain(df: DataFrame) -> DataFrame:
         _c(df, "is_multipiece").cast(BooleanType()).alias("is_multipiece"),
         _c(df, "base_rate_date").cast(StringType()).alias("base_rate_date"),
         F.lit("modeled_pipeline").alias("rate_source"),
-        F.coalesce(_c(df, "gross"), _c(df, "old_gross")).cast("double").alias("gross"),
+        F.round(
+            F.coalesce(_c(df, "gross"), _c(df, "old_gross")).cast(DoubleType()),
+            2,
+        ).alias("gross"),
     )
 
     discounts = F.struct(base_arr.alias("base"), min_arr.alias("min"))
@@ -185,5 +198,8 @@ def model_explain(df: DataFrame) -> DataFrame:
     return df.select(
         rate_construction.alias("rate_construction"),
         discounts.alias("discounts"),
-        F.coalesce(_c(df, "new_net").cast("double"), F.lit(0.0)).alias("final_net"),
+        F.round(
+            F.coalesce(_c(df, "new_net").cast(DoubleType()), F.lit(0.0)),
+            2,
+        ).alias("final_net"),
     )
